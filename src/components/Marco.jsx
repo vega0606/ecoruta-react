@@ -1,19 +1,21 @@
-import { NavLink, useLocation } from 'react-router';
+import { Link, NavLink } from 'react-router';
 import { useState } from 'react';
 import { useAuth } from '../context/useAuth.js';
 import { useMenuCompacto } from '../hooks/useMenuCompacto.js';
 import styles from './Marco.module.css';
 
-// Marco compartido: menú con sección activa, preferencia y cierre de sesión.
+// Marco compartido: menú con sección activa, preferencia del dispositivo,
+// acceso/cierre de sesión y pie. Permanece montado mientras cambian las rutas.
 export function Marco({ children }) {
   const { sesion, salir } = useAuth();
-  const { pathname } = useLocation();
   const { compacto, alternar } = useMenuCompacto();
   const [pendiente, setPendiente] = useState(false);
   const [error, setError] = useState('');
 
   const clase = ({ isActive }) =>
     isActive ? styles.enlace + ' ' + styles.activo : styles.enlace;
+  const claseDestacada = ({ isActive }) =>
+    clase({ isActive }) + ' ' + styles.destacado;
 
   async function cerrar() {
     setError('');
@@ -31,31 +33,40 @@ export function Marco({ children }) {
   return (
     <>
       <header className={styles.cabecera}>
-        <p className={styles.marca}>♻️ EcoRuta</p>
-        <nav aria-label="Principal" className={compacto ? styles.compacto : styles.menu}>
-          <NavLink to="/" end className={clase}>Inicio</NavLink>
-          {sesion ? (
-            <NavLink to="/puntos" className={clase}>Mis puntos</NavLink>
-          ) : sesion === null ? (
-            <NavLink to="/acceso" className={clase}>Acceso</NavLink>
-          ) : null}
-        </nav>
-        <div className={styles.controles}>
-          <button type="button" className="btn btn-outline-secondary btn-sm"
-            aria-pressed={compacto} onClick={alternar}>
-            Menú compacto
-          </button>
-          {sesion && (
-            <button type="button" className="btn btn-success btn-sm"
-              disabled={pendiente} onClick={cerrar}>
-              {pendiente ? 'Cerrando…' : 'Cerrar sesión'}
+        <div className={styles.barra}>
+          <Link to="/" className={styles.marca}>♻️ EcoRuta</Link>
+          <nav aria-label="Principal" className={compacto ? styles.compacto : styles.menu}>
+            <NavLink to="/" end className={clase}>Inicio</NavLink>
+            <NavLink to="/puntos-reciclaje" className={clase}>Puntos de reciclaje</NavLink>
+            <NavLink to="/campanas" className={clase}>Campañas</NavLink>
+            <NavLink to="/puntos" className={clase}>Registrar un punto</NavLink>
+            <NavLink to="/voluntariado" className={claseDestacada}>Unirse</NavLink>
+            {sesion === null && <NavLink to="/acceso" className={clase}>Acceso</NavLink>}
+            {sesion && (
+              <button type="button" className={styles.boton} disabled={pendiente} onClick={cerrar}>
+                {pendiente ? 'Cerrando…' : 'Cerrar sesión'}
+              </button>
+            )}
+            <button type="button" className={styles.boton} aria-pressed={compacto} onClick={alternar}>
+              Menú compacto
             </button>
-          )}
+          </nav>
         </div>
         {error && <p role="alert" className={styles.error}>{error}</p>}
-        <p className={styles.ubicacion}>Ruta actual: {pathname}</p>
       </header>
-      <main className={styles.contenido}>{children}</main>
+
+      <main>{children}</main>
+
+      <footer className={styles.pie}>
+        <h3>EcoRuta</h3>
+        <p>© 2026 EcoRuta. Todos los derechos reservados. Compromiso con el reciclaje comunitario.</p>
+        <div>
+          <a href="#">Privacidad</a>
+          <a href="#">Términos de Servicio</a>
+          <a href="#">Contacto</a>
+          <a href="#">Mapa del Sitio</a>
+        </div>
+      </footer>
     </>
   );
 }

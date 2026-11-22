@@ -1,18 +1,7 @@
-.tarjeta {
-  background: #fff;
-  border: 1px solid #c1c8c2;
-  border-radius: 12px;
-  padding: 1rem;
-}
-.titulo { color: #1b4332; font-size: 1.15rem; margin: 0 0 .5rem; }
-.dato { margin: 0 0 .25rem; overflow-wrap: anywhere; }
-.etiquetas { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: .5rem 0; }
-.etiqueta {
-  background: #a5d0b9;
-  color: #012d1d;
-  border-radius: 999px;
-  padding: .1rem .7rem;
-  font-size: .85rem;
-}
-.coordenadas { color: #414844; font-size: .85rem; margin: 0 0 .5rem; }
-.acciones { display: flex; flex-wrap: wrap; gap: .5rem; }
+.seleccionado { outline: 3px solid #1b4332; }
+.titulo { margin-top: 0; font-size: 1.2em; }
+.materiales { margin: 6px 0 12px; padding-left: 20px; }
+.etiquetas { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 12px; }
+.etiqueta { background: #a5d0b9; color: #012d1d; border-radius: 999px; padding: 1px 10px; font-size: 0.8em; font-weight: 600; }
+.coordenadas { font-size: 0.85em; margin: 0 0 12px; }
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }

@@ -7,7 +7,38 @@ function literalLike(texto) {
   return texto.replace(/[\\%_]/g, (c) => '\\' + c);
 }
 
-// Consultar: el filtro de texto y de categoría se aplica en la API.
+// Comprueba que un registro tenga los campos y tipos que usa la interfaz.
+function esPuntoValido(p) {
+  return p !== null && typeof p === 'object' &&
+    Number.isInteger(p.id) &&
+    typeof p.nombre === 'string' &&
+    typeof p.direccion === 'string' &&
+    typeof p.horario === 'string' &&
+    Array.isArray(p.materiales) &&
+    Array.isArray(p.categorias) &&
+    typeof p.lat === 'number' &&
+    typeof p.lng === 'number' &&
+    typeof p.activo === 'boolean';
+}
+
+// Mapa e inicio: puntos activos que la política RLS deja leer a quien consulta.
+// Sin sesión llegan solo los puntos de ejemplo; con sesión, también los propios.
+export async function listarPuntosPublicos(signal) {
+  const { data, error } = await supabase.from(tabla)
+    .select(columnas)
+    .eq('activo', true)
+    .order('id', { ascending: true })
+    .limit(50)
+    .abortSignal(signal);
+  if (error) throw new Error(error.message);
+  if (!Array.isArray(data)) throw new Error('Se esperaba una colección de puntos.');
+  if (!data.every(esPuntoValido)) {
+    throw new Error('Los campos recibidos no coinciden con los de la tabla de puntos.');
+  }
+  return data;
+}
+
+// Consultar (mis puntos): el filtro de texto y de categoría se aplica en la API.
 export async function listarPuntos(userId, { texto = '', categoria = '' }, signal) {
   let consulta = supabase.from(tabla)
     .select(columnas)

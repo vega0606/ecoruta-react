@@ -59,30 +59,37 @@ export function PanelPuntos({ userId }) {
   }
 
   return (
-    <section aria-label="Gestión de puntos" className="d-grid gap-4">
-      <h1 className="h3">Mis puntos de reciclaje</h1>
+    <section aria-label="Gestión de puntos" className="panel">
+      <div className="encabezado" style={{ marginBottom: 0 }}>
+        <h1>Registrar un punto</h1>
+        <p>
+          Ayúdanos a expandir la red. Tus puntos son privados: solo tu cuenta puede
+          verlos, editarlos y eliminarlos.
+        </p>
+      </div>
 
       {/* key: al cambiar de punto en edición, el formulario reinicia su borrador. */}
       <FormularioPunto key={enEdicion?.id ?? 'nuevo'} punto={enEdicion}
         ocupado={bloqueado} onGuardar={guardar} onCancelar={() => setEnEdicion(null)} />
 
-      {mensaje && <p role="status" className="alert alert-success mb-0">{mensaje}</p>}
+      {mensaje && <p role="status" className="aviso-ok">{mensaje}</p>}
       {errorAccion && <AvisoError>{errorAccion}</AvisoError>}
 
-      <Filtros filtros={filtros} onCambiar={setFiltros} disabled={ocupado} />
+      <div>
+        <h2>Mis puntos registrados</h2>
+        <Filtros filtros={filtros} onCambiar={setFiltros} disabled={ocupado} />
+      </div>
 
       {cargando && <p role="status">Cargando puntos…</p>}
       {!cargando && error && (
         <div>
           <AvisoError>No se pudo consultar: {error}</AvisoError>
-          <button type="button" className="btn btn-outline-danger" onClick={recargar} disabled={ocupado}>
-            Reintentar consulta
-          </button>
+          <button type="button" onClick={recargar} disabled={ocupado}>Reintentar consulta</button>
         </div>
       )}
       {!cargando && !error && (
         <section aria-label="Puntos consultados">
-          <p>{filas.length} puntos visibles.</p>
+          <p role="status">{filas.length} puntos visibles.</p>
           {filas.length === 0 && (
             <p>
               {filtros.texto || filtros.categoria
@@ -90,25 +97,23 @@ export function PanelPuntos({ userId }) {
                 : 'Aún no has registrado puntos. Usa el formulario de arriba.'}
             </p>
           )}
-          <div className="row g-3">
+          <div className="puntos">
             {filas.map((fila) => (
-              <div key={fila.id} className="col-12 col-md-6 col-lg-4">
-                <TarjetaPunto punto={fila}>
-                  {/* La URL lleva el id real, no la posición en el arreglo. */}
-                  <Link className="btn btn-outline-success btn-sm"
-                    to={'/puntos/' + encodeURIComponent(fila.id)}>
-                    Ver detalle de {fila.nombre}
-                  </Link>
-                  <button type="button" className="btn btn-outline-primary btn-sm"
-                    disabled={ocupado} onClick={() => { setMensaje(''); setErrorAccion(''); setEnEdicion(fila); }}>
-                    Editar
-                  </button>
-                  <button type="button" className="btn btn-outline-danger btn-sm"
-                    disabled={ocupado} onClick={() => eliminar(fila)}>
-                    Eliminar
-                  </button>
-                </TarjetaPunto>
-              </div>
+              <TarjetaPunto key={fila.id} punto={fila} mostrarCoordenadas>
+                {/* La URL lleva el id real, no la posición en el arreglo. */}
+                <Link className="boton boton-secundario boton-chico"
+                  to={'/puntos/' + encodeURIComponent(fila.id)}>
+                  Ver detalle de {fila.nombre}
+                </Link>
+                <button type="button" className="boton-chico" disabled={ocupado}
+                  onClick={() => { setMensaje(''); setErrorAccion(''); setEnEdicion(fila); }}>
+                  Editar
+                </button>
+                <button type="button" className="boton-chico boton-peligro" disabled={ocupado}
+                  onClick={() => eliminar(fila)}>
+                  Eliminar
+                </button>
+              </TarjetaPunto>
             ))}
           </div>
         </section>

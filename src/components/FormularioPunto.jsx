@@ -51,61 +51,57 @@ export function FormularioPunto({ punto, ocupado, onGuardar, onCancelar }) {
   function campo(nombre, etiqueta, props = {}) {
     const id = prefijo + '-' + nombre;
     return (
-      <div className="col-12 col-md-6">
-        <label htmlFor={id} className="form-label">{etiqueta}</label>
-        <input id={id} name={nombre} className={'form-control' + (errores[nombre] ? ' is-invalid' : '')}
-          value={borrador[nombre]} onChange={cambiar}
+      <div>
+        <label htmlFor={id}>{etiqueta}</label>
+        <input id={id} name={nombre} value={borrador[nombre]} onChange={cambiar}
           aria-invalid={Boolean(errores[nombre])}
           aria-describedby={errores[nombre] ? id + '-error' : undefined} {...props} />
-        {errores[nombre] && (
-          <div id={id + '-error'} className="invalid-feedback">{errores[nombre]}</div>
-        )}
+        {errores[nombre] && <p id={id + '-error'} className="campo-error">{errores[nombre]}</p>}
       </div>
     );
   }
 
   return (
-    <form onSubmit={enviar} noValidate>
-      <fieldset disabled={ocupado} className="row g-3">
-        <legend className="h5">{punto ? 'Editar punto' : 'Registrar un punto'}</legend>
-        {campo('nombre', 'Nombre')}
-        {campo('direccion', 'Dirección')}
-        {campo('horario', 'Horario', { placeholder: 'Lunes a viernes: 8:00 - 18:00' })}
-        {campo('materiales', 'Materiales (separados por comas)', { placeholder: 'Papel, Cartón' })}
+    <form onSubmit={enviar} noValidate aria-label={punto ? 'Editar punto' : 'Registrar un punto'}>
+      <fieldset disabled={ocupado}>
+        <h2 style={{ marginTop: 0 }}>{punto ? 'Editar punto' : 'Información del punto'}</h2>
+        <div className="campos">
+          {campo('nombre', 'Nombre del punto')}
+          {campo('direccion', 'Dirección completa')}
+          {campo('horario', 'Horario de atención', { placeholder: 'Lun-Vie 09:00 - 18:00' })}
+          {campo('materiales', 'Materiales (separados por comas)', { placeholder: 'Papel, Cartón' })}
+        </div>
 
-        <div className="col-12">
-          <fieldset>
-            <legend className="form-label fs-6">Categorías</legend>
+        <fieldset style={{ marginTop: 14 }}>
+          <legend>Categorías</legend>
+          <div className="categorias">
             {CATEGORIAS.map((categoria) => {
               const id = prefijo + '-cat-' + categoria;
               return (
-                <div key={categoria} className="form-check form-check-inline">
-                  <input id={id} type="checkbox" className="form-check-input"
-                    checked={borrador.categorias.includes(categoria)}
+                <label key={categoria} htmlFor={id}>
+                  <input id={id} type="checkbox" checked={borrador.categorias.includes(categoria)}
                     onChange={() => alternarCategoria(categoria)} />
-                  <label htmlFor={id} className="form-check-label">{categoria}</label>
-                </div>
+                  {categoria}
+                </label>
               );
             })}
-            {errores.categorias && (
-              <div className="text-danger small" role="alert">{errores.categorias}</div>
-            )}
-          </fieldset>
+          </div>
+          {errores.categorias && <p className="campo-error" role="alert">{errores.categorias}</p>}
+        </fieldset>
+
+        <Ubicacion disabled={ocupado}
+          onUbicada={({ lat, lng }) => setBorrador((a) => ({ ...a, lat: String(lat), lng: String(lng) }))} />
+        <div className="campos">
+          {campo('lat', 'Latitud', { inputMode: 'decimal' })}
+          {campo('lng', 'Longitud', { inputMode: 'decimal' })}
         </div>
 
-        <div className="col-12">
-          <Ubicacion disabled={ocupado}
-            onUbicada={({ lat, lng }) => setBorrador((a) => ({ ...a, lat: String(lat), lng: String(lng) }))} />
-        </div>
-        {campo('lat', 'Latitud', { inputMode: 'decimal' })}
-        {campo('lng', 'Longitud', { inputMode: 'decimal' })}
-
-        <div className="col-12 d-flex flex-wrap gap-2">
-          <button type="submit" className="btn btn-success">
+        <div className="acciones-form">
+          <button type="submit">
             {ocupado ? 'Procesando…' : punto ? 'Guardar cambios' : 'Registrar punto'}
           </button>
           {punto && (
-            <button type="button" className="btn btn-outline-secondary" onClick={onCancelar}>
+            <button type="button" className="boton-secundario" onClick={onCancelar}>
               Cancelar edición
             </button>
           )}

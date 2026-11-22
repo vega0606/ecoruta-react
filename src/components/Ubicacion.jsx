@@ -32,12 +32,12 @@ export function Ubicacion({ onUbicada, disabled = false }) {
   }
 
   return (
-    <div aria-label="Ubicación" className="mb-2">
-      <button type="button" className="btn btn-outline-success btn-sm"
+    <div aria-label="Ubicación" style={{ marginTop: 14 }}>
+      <button type="button" className="boton-secundario boton-chico" style={{ marginTop: 0 }}
         onClick={ubicar} disabled={pendiente || disabled}>
         Usar mi ubicación
       </button>
-      <span role="status" className="ms-2 small">{mensaje}</span>
+      <span role="status" style={{ marginLeft: 10, fontSize: '0.9em' }}>{mensaje}</span>
     </div>
   );
 }

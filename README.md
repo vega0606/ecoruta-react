@@ -41,21 +41,27 @@ Nunca uses `service_role`, claves `secret` ni el secreto de Google: todo valor `
 
 ### Preparar Supabase (una sola vez)
 
-1. En **SQL Editor** ejecuta `supabase/migracion_crud_por_usuario.sql`. Agrega `user_id` a `puntos_reciclaje`, quita la lectura pública anterior y crea políticas RLS para que cada cuenta vea y cambie solo sus filas.
+1. En **SQL Editor** ejecuta, en este orden:
+   1. `supabase/migracion_crud_por_usuario.sql`: agrega `user_id` a `puntos_reciclaje`, quita la lectura pública anterior y crea políticas RLS para que cada cuenta vea y cambie solo sus filas.
+   2. `supabase/migracion_puntos_publicos.sql`: deja visibles para cualquier visitante los puntos de ejemplo (filas sin dueño), para que el inicio y el mapa públicos funcionen sin sesión. Los puntos de cada cuenta siguen privados.
 2. En **Authentication → URL Configuration → Redirect URLs** agrega `http://localhost:5173/acceso` y la URL pública de producción con la ruta `/acceso`. Es distinto del callback de Supabase configurado en Google, que no cambia.
 
 ## Recorrido
 
 | Ruta | Vista | Acceso |
 |---|---|---|
-| `/` | Inicio | Pública |
+| `/` | Inicio: buscador, cómo funciona, materiales y puntos destacados | Pública |
+| `/puntos-reciclaje` | Mapa (Leaflet), filtros por categoría, búsqueda y «Cerca de mí» | Pública |
+| `/campanas` | Campañas ambientales y calendario | Pública |
+| `/voluntariado` | Inscripción (formulario validado; el envío es de prueba) | Pública |
 | `/acceso` | Entrar con Google | Pública |
-| `/puntos` | Panel: crear, consultar, editar, eliminar | Requiere sesión |
+| `/puntos` | «Registrar un punto»: crear, consultar, editar, eliminar | Requiere sesión |
 | `/puntos/:id` | Detalle por id real | Requiere sesión |
+| `/registrar-punto` | Redirige a `/puntos` (dirección del sitio anterior) | Requiere sesión |
 | cualquier otra | Página no encontrada | Pública |
 
 - **Entidad y tabla:** punto de reciclaje, tabla `puntos_reciclaje` de Supabase.
-- **Quién puede qué:** una cuenta autenticada lee, crea, edita y elimina solo las filas con su `user_id`. Sin sesión no hay acceso a la tabla (RLS). El guardián de rutas solo decide qué pantalla se muestra; la protección de los datos la hacen las políticas.
+- **Quién puede qué:** sin sesión se leen solo los puntos de ejemplo (filas sin dueño). Una cuenta autenticada lee, crea, edita y elimina únicamente las filas con su `user_id`; no ve las de otras cuentas. El guardián de rutas solo decide qué pantalla se muestra; la protección de los datos la hacen las políticas RLS.
 - **Búsqueda:** por nombre (`ilike`) y categoría (`contains`), aplicada en la API.
 - **Repetir el flujo con datos ficticios:** abre `/puntos/1` sin sesión (te lleva a `/acceso`) → entra con una cuenta de prueba → registra un punto ficticio → ábrelo desde «Ver detalle» y recarga → edítalo → cierra sesión desde el detalle → entra con una segunda cuenta de prueba y comprueba que no ve el punto de la primera.
 - **Acceso de prueba sin publicar credenciales:** se entra con Google; para la evaluación, comparte con el docente los correos de las cuentas de prueba por el canal acordado, no en este repositorio.
@@ -63,11 +69,12 @@ Nunca uses `service_role`, claves `secret` ni el secreto de Google: todo valor `
 ## Estructura
 
 ```
-src/pages/       Inicio, Acceso, Detalle
-src/components/  Marco (menú), RutaPrivada, PanelPuntos, FormularioPunto, TarjetaPunto (reutilizada), Filtros, Ubicacion, AvisoError
+src/pages/       Inicio, PuntosReciclaje, Campanas, Voluntariado, Acceso, Detalle
+src/components/  Marco (menú y pie), RutaPrivada, PanelPuntos, FormularioPunto, TarjetaPunto (reutilizada), MapaPuntos, Filtros, Ubicacion, AvisoError
 src/context/     AuthProvider y useAuth (sesión compartida)
-src/hooks/       usePuntos (lectura con efecto), useMenuCompacto (localStorage)
-src/services/    puntos (CRUD), validarPunto y idRegistro (reglas puras)
+src/hooks/       usePuntos, usePuntosPublicos (lectura con efecto), useMenuCompacto (localStorage), useTituloPagina
+src/services/    puntos (CRUD y lectura pública), consultas, validarPunto, validarInscripcion e idRegistro (reglas puras)
+src/data/        contenido de campañas
 src/lib/         cliente único de Supabase
 tests/           pruebas unitarias
 supabase/        migración con RLS
@@ -76,11 +83,11 @@ docs/bitacora.md Documentación principal
 
 ## Complementos del tercer corte
 
-- **CSS Modules:** `Marco.module.css`, `TarjetaPunto.module.css`.
-- **Librería visual:** React Bootstrap (`Alert` en `AvisoError`, estilos de formularios y botones).
+- **CSS Modules:** `Marco.module.css`, `TarjetaPunto.module.css`. El diseño global (paleta verde, tarjetas, formularios) se migró de `diseño.css` a `src/index.css`.
+- **Librería visual:** React Bootstrap (`Alert` en `AvisoError`) y Leaflet para el mapa.
 - **localStorage:** preferencia «Menú compacto» (`ecoruta:menu-compacto:v1`).
 - **Localización:** geolocalización bajo demanda en el formulario («Usar mi ubicación»), con alternativa manual de latitud y longitud. No se guarda nada hasta que la persona registra el punto.
-- **Pruebas unitarias:** reglas de validación del punto y del id (`npm test`).
+- **Pruebas unitarias:** validación del punto, del id y de la inscripción, búsquedas y distancia al punto más cercano (13 pruebas, `npm test`).
 
 ## Despliegue
 

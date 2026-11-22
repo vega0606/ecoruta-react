@@ -11,27 +11,24 @@ export function Filtros({ filtros, onCambiar, disabled }) {
   }
 
   return (
-    <fieldset className="row g-2 mb-3" disabled={disabled}>
-      <legend className="h6">Buscar puntos</legend>
-      <div className="col-12 col-md-6">
-        <label htmlFor={prefijo + '-texto'} className="form-label">Nombre</label>
-        <input id={prefijo + '-texto'} name="texto" className="form-control"
-          value={filtros.texto} onChange={actualizar} placeholder="Ej. Plaza" />
+    <form className="filtros-api" onSubmit={(e) => e.preventDefault()} aria-label="Buscar mis puntos">
+      <div>
+        <label htmlFor={prefijo + '-texto'}>Buscar por nombre</label>
+        <input id={prefijo + '-texto'} name="texto" value={filtros.texto}
+          onChange={actualizar} placeholder="Ej. Plaza" disabled={disabled} />
       </div>
-      <div className="col-12 col-md-4">
-        <label htmlFor={prefijo + '-categoria'} className="form-label">Categoría</label>
-        <select id={prefijo + '-categoria'} name="categoria" className="form-select"
-          value={filtros.categoria} onChange={actualizar}>
+      <div>
+        <label htmlFor={prefijo + '-categoria'}>Categoría</label>
+        <select id={prefijo + '-categoria'} name="categoria" value={filtros.categoria}
+          onChange={actualizar} disabled={disabled}>
           <option value="">Todas</option>
           {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
-      <div className="col-12 col-md-2 d-flex align-items-end">
-        <button type="button" className="btn btn-outline-secondary w-100"
-          onClick={() => onCambiar({ texto: '', categoria: '' })}>
-          Limpiar
-        </button>
-      </div>
-    </fieldset>
+      <button type="button" className="boton-secundario" disabled={disabled}
+        onClick={() => onCambiar({ texto: '', categoria: '' })}>
+        Limpiar
+      </button>
+    </form>
   );
 }

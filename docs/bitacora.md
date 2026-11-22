@@ -14,18 +14,23 @@
 
 | Segundo corte (HTML + JS) | Tercer corte (React) |
 |---|---|
-| `index.html`, `puntos-reciclaje.html`, `registrar-punto.html`, `inscripcion-voluntariado.html`, `campanas.html` | Rutas `/`, `/acceso`, `/puntos`, `/puntos/:id` y página no encontrada |
+| `index.html` | Página `Inicio` (buscador, cómo funciona, materiales, destacados) |
+| `puntos-reciclaje.html` + `puntos.js` (Leaflet, filtros, «Cerca de mí») | Página `PuntosReciclaje` con el componente `MapaPuntos` |
+| `campanas.html` | Página `Campanas` con datos en `src/data/campanas.js` |
+| `inscripcion-voluntariado.html` | Página `Voluntariado` con formulario controlado (el envío sigue siendo de prueba) |
+| `registrar-punto.html` (no guardaba) | `/puntos`: `FormularioPunto` controlado con CRUD real; `/registrar-punto` redirige |
 | `api.js` (`fetch` + validación de estructura) | `services/puntos.js` con el cliente de Supabase |
-| `consultas.js` (filtros sobre arreglos) | Filtros enviados a la API (`ilike`, `contains`) |
+| `consultas.js` (filtros sobre arreglos) | `services/consultas.js` (mismas funciones, con pruebas) y filtros enviados a la API en «Mis puntos» |
 | `ui.js` (`crearTarjeta`) | Componente reutilizable `TarjetaPunto` |
 | `auth.js` (Google con Supabase Auth) | `AuthProvider` + Context (`useAuth`) |
-| Formularios que validaban pero no guardaban | `FormularioPunto` controlado con CRUD real |
+| `diseño.css` | `src/index.css` (global), `Marco.module.css` y `TarjetaPunto.module.css` |
+| `app.js` (menú activo) | `NavLink` con `aria-current` en `Marco` |
 | `config.js` con URL y clave | `.env.local` / `.env.example` y variables en Vercel |
 
 ## 3. Decisiones técnicas
 
 - **Entidad principal:** `puntos_reciclaje`. Se agregó `user_id` para que cada punto tenga dueño y exista un detalle privado por cuenta.
-- **Lectura pública retirada:** en el segundo corte la tabla se leía como `anon`. Con CRUD por cuenta y detalle privado, esa política permitiría ver filas ajenas, así que la migración la elimina y deja solo políticas por `user_id`.
+- **Lectura pública acotada:** en el segundo corte la tabla se leía como `anon` sin restricción. Con CRUD por cuenta y detalle privado, esa política permitiría ver filas ajenas, así que la migración la elimina y crea políticas por `user_id`. Luego `migracion_puntos_publicos.sql` abre solo la lectura de las filas sin dueño (los 4 puntos de ejemplo) para que el inicio y el mapa funcionen sin sesión.
 - **Dos controles distintos:** React Router decide qué pantalla se muestra; RLS decide qué filas puede leer o modificar cada cuenta.
 - **Sesión con Context:** un solo cliente de Supabase; el proveedor escucha `onAuthStateChange` y solo expone el usuario, no los tokens. Mientras la sesión es `undefined` no se muestra contenido privado.
 - **Efecto solo para sincronizar con lo externo:** `usePuntos` (lectura con debounce de 300 ms y cancelación) y el listener de sesión. Guardar y eliminar viven en manejadores de eventos.
@@ -49,7 +54,8 @@ Registrar aquí resultado real y enlace a la captura (sin tokens ni correos real
 | Prueba | Resultado | Evidencia |
 |---|---|---|
 | `npm run build` compila | [ ] | |
-| `npm test` (6 pruebas) | [ ] | |
+| `npm test` (13 pruebas) | [ ] | |
+| Mapa: marcadores, filtro por categoría y `?id=` desde el inicio | [ ] | |
 | `/puntos` sin sesión redirige a `/acceso` | [ ] | |
 | Crear, consultar, editar y eliminar un punto ficticio | [ ] | |
 | Los cambios siguen tras recargar | [ ] | |
@@ -64,8 +70,10 @@ _[Anotar aquí los fallos reales que aparecieron y cómo se corrigieron: redirec
 
 ## 7. Pendiente
 
-- [ ] Ejecutar la migración SQL en Supabase.
+- [ ] Ejecutar las dos migraciones SQL en Supabase (`migracion_crud_por_usuario.sql` y luego `migracion_puntos_publicos.sql`).
 - [ ] Autorizar las URL de redirección (local y producción) con la ruta `/acceso`.
 - [ ] Publicar en Vercel y pegar la URL en el README.
 - [ ] Dar acceso al docente si el repositorio es privado.
-- [ ] Páginas del segundo corte aún sin migrar: campañas y voluntariado (fuera del CRUD principal).
+- [ ] El formulario de voluntariado valida pero no guarda (igual que en el segundo corte); no hay tabla de inscripciones.
+- [ ] Los botones «Ver más» e «Inscribirse» de campañas solo muestran un aviso.
+- [ ] El `npm run build` avisa que el paquete supera 500 kB (por Leaflet y Bootstrap); no afecta el funcionamiento.

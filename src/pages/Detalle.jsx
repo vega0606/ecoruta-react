@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useAuth } from '../context/useAuth.js';
+import { useTituloPagina } from '../hooks/useTituloPagina.js';
 import { idValido } from '../services/idRegistro.js';
 import { leerPunto } from '../services/puntos.js';
 import { TarjetaPunto } from '../components/TarjetaPunto.jsx';
 import { AvisoError } from '../components/AvisoError.jsx';
 
 export function Detalle() {
+  useTituloPagina('Detalle del punto');
   const { id } = useParams();
   const { sesion } = useAuth();
   const usuario = sesion.user.id;
@@ -48,10 +50,8 @@ export function Detalle() {
     return (
       <>
         <AvisoError>No se pudo consultar el punto.</AvisoError>
-        <button type="button" className="btn btn-outline-danger" onClick={() => setRevision((n) => n + 1)}>
-          Reintentar
-        </button>
-        <p className="mt-3"><Link to="/puntos">Volver al listado</Link></p>
+        <button type="button" onClick={() => setRevision((n) => n + 1)}>Reintentar</button>
+        <p style={{ marginTop: 16 }}><Link to="/puntos">Volver al listado</Link></p>
       </>
     );
   }
@@ -62,9 +62,9 @@ export function Detalle() {
   }
   return (
     <section>
-      <TarjetaPunto punto={fila} titulo="h1">
-        <Link className="btn btn-outline-success btn-sm" to="/puntos">Volver al listado</Link>
-        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => volver('/')}>
+      <TarjetaPunto punto={fila} titulo="h1" mostrarCoordenadas>
+        <Link className="boton boton-chico" to="/puntos">Volver al listado</Link>
+        <button type="button" className="boton-secundario boton-chico" onClick={() => volver('/')}>
           Ir a inicio
         </button>
       </TarjetaPunto>
